@@ -41,30 +41,28 @@ var Application = React.createClass({
     }
 
     return (
-      /* jshint ignore:start */
-      <div className="App">
-        {
-          this.props.path === '/' ?
-          <div className="jumbotron">
-            <div className="container text-center">
-              <h1>Clicker</h1>
+        <div className="App">
+          {
+            this.props.path === '/' ?
+                <div className="jumbotron">
+                  <div className="container text-center">
+                    <h1>Clicker</h1>
+                  </div>
+                </div> :
+                <div className="container">
+                  <h2>{page.title}</h2>
+                </div>
+          }
+          <Game className="game" />
+          <div className="navbar-footer">
+            <div className="container">
+              <p className="text-muted">
+                <span><a href="/">Home</a></span>
+                <span><a href="/privacy">Privacy</a></span>
+              </p>
             </div>
-          </div> :
-          <div className="container">
-            <h2>{page.title}</h2>
-          </div>
-        }
-        <Game className="game" />
-        <div className="navbar-footer">
-          <div className="container">
-            <p className="text-muted">
-              <span><a href="/">Home</a></span>
-              <span><a href="/privacy">Privacy</a></span>
-            </p>
           </div>
         </div>
-      </div>
-      /* jshint ignore:end */
     );
   }
 

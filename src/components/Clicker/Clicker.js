@@ -15,12 +15,14 @@ var Clicker = React.createClass({
     },
 
     render() {
-        return <div
-            type="button"
-            className="clicker"
-            onClick={this.click}>
-            Click!
-        </div>
+        return (
+            <div
+                type="button"
+                className="clicker"
+                onClick={this.click}>
+                Click!
+            </div>
+        )
     }
 
 });

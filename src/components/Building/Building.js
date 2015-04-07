@@ -51,35 +51,35 @@ var Building = React.createClass({
   },
 
   render() {
-    /* jshint ignore:start */
-    return <div className="building">
-      <div className="row">
-        {this.props.name}: {this.props.numOwned}
-      </div>
-      <div className="row">
-        Cost: {this.currentCost().toFixed(2)}
-      </div>
-      <div className="row">
-        {this.props.description}
-      </div>
-      <div className="row">
-        <div
-            type="button"
-            disabled={!this.canBuy()}
-            className="buyButton"
-            onClick={this.buy}>
-          Buy
+    return (
+        <div className="building">
+          <div className="row">
+            {this.props.name}: {this.props.numOwned}
+          </div>
+          <div className="row">
+            Cost: {this.currentCost().toFixed(2)}
+          </div>
+          <div className="row">
+            {this.props.description}
+          </div>
+          <div className="row">
+            <div
+                type="button"
+                disabled={!this.canBuy()}
+                className="buyButton"
+                onClick={this.buy}>
+              Buy
+            </div>
+            <div
+                type="button"
+                disabled={!this.canSell()}
+                className="sellButton"
+                onClick={this.sell}>
+              Sell
+            </div>
+          </div>
         </div>
-        <div
-            type="button"
-            disabled={!this.canSell()}
-            className="sellButton"
-            onClick={this.sell}>
-          Sell
-        </div>
-      </div>
-    </div>;
-    /* jshint ignore:end */
+    );
   }
 
 });

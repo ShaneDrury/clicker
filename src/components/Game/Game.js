@@ -118,7 +118,7 @@ var Game = React.createClass({
                   description={info.description}
                   baseCost={info.baseCost}
                   buyCallback={_this.buy}
-                  sellCallback={_this.sell}/>
+                  sellCallback={_this.sell} />
           );
         }
       }
@@ -137,6 +137,7 @@ var Game = React.createClass({
 
   render() {
     var string = canUseDOM? <String /> : <div />;
+
     return (
         <div className="container">
           <div className="row">
