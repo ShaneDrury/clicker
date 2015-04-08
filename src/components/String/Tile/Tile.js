@@ -1,56 +1,51 @@
 'use strict';
 
 import React from 'react';
-import ReactCanvas from 'react-canvas';
-var Image = ReactCanvas.Image;
-var Group = ReactCanvas.Group;
 
 import './Tile.less';
 
 var Tile = React.createClass({
 
     propTypes: {
+        parentCoordsGetter: React.PropTypes.func.isRequired,
+        getContext: React.PropTypes.func.isRequired,
+        top: React.PropTypes.number,
+        left: React.PropTypes.number,
+        width: React.PropTypes.number.isRequired,
+        height: React.PropTypes.number.isRequired
+    },
+
+    getDefaultProps: function () {
+        return {
+            top: 0,
+            left: 0
+        }
     },
 
     getInitialState: function() {
+        var ctx = this.props.getContext();
+        var overlay = ctx.getImageData(this.props.top,
+            this.props.left, this.props.width, this.props.height);
+        for(var idx = 0; idx < overlay.data.length; idx+=4) {
+            if (idx % 4 != 3){
+                overlay.data[idx] = 0;
+                overlay.data[idx+1] = 0;
+                overlay.data[idx+2] = 0;
+                overlay.data[idx+3] = 255;
+            }
+        }
         return {
+            overlay: overlay
         }
     },
 
-    render() {
-        var imageStyle = this.getImageStyle();
-        var groupStyle = this.getGroupStyle();
-        return (
-            <Group ref="myGrp" style={groupStyle} onClick={this.click}>
-                <Image style={imageStyle}
-                       src={'tile.png'}
-                       fadeIn={true} />
-            </Group>
-        )
+    renderOverlay: function() {
+        var ctx = this.props.getContext();
+        ctx.putImageData(this.state.overlay,
+            this.props.left,
+            this.props.top);
     },
 
-    click: function(event){
-        console.log(React.findDOMNode(this.refs.myGrp).getBoundingClientRect());
-        var x = event.clientX;
-        var y = event.clientY;
-    },
-
-    getImageStyle: function() {
-        return {
-            top: 0,
-            left: 0,
-            width: 100,
-            height: 100
-        }
-    },
-
-    getGroupStyle: function() {
-        return {
-            width: 100,
-            height: 100,
-            backgroundColor: '#ff0000'
-        }
-    }
 });
 
 module.exports = Tile;

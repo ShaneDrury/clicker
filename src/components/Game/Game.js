@@ -136,7 +136,11 @@ var Game = React.createClass({
   },
 
   render() {
-    var string = canUseDOM? <String /> : <div />;
+    var string = canUseDOM?
+        <String
+            width={200}
+            height={200} /> :
+        <div />;
 
     return (
         <div className="container">
