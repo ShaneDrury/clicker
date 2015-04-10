@@ -13,7 +13,10 @@ var String = React.createClass({
     getInitialState: function() {
         return {
             overlay: null,
-            stage: null
+            bottomStage: null,
+            topStage: null,
+            imageData: null,
+            img: null
         }
     },
 
@@ -22,6 +25,7 @@ var String = React.createClass({
     },
 
     click: function() {
+        console.log("CLICK");
         var el = this.getCoords();
         var x = Math.round(event.clientX - el.left);
         var y = Math.round(event.clientY - el.top);
@@ -29,33 +33,32 @@ var String = React.createClass({
     },
 
     renderCanvas: function() {
-        var _this = this;
-        var stage = this.state.stage;
-        var layer = new Kinetic.Layer();
-        var img = new Image();
-        img.src = 'tile.png';
-        img.onload = function() {
-            var tile = new Kinetic.Image({
-                x: 0,
-                y: 0,
-                image: img,
-                width: 100,
-                height: 100
-            });
-            var rect = new Kinetic.Rect({
-                x: 0, y:0,
-                width: _this.props.width,
-                height: _this.props.height,
-                fill: 'red'
-            });
-            layer.on('mouseover', _this.click);
-            layer.add(rect);
-            layer.add(tile);
-
-            // Need to make a fake canvas and draw from it to the real one
-            var ctx = _this.getContext(layer);
-            var imageData = ctx.getImageData(0, 0, 100, 100);
-            var overlay = _this.state.overlay;
+        var bottomStage = this.state.bottomStage;
+        var topStage = this.state.topStage;
+        var topLayer = new Kinetic.Layer();
+        var bgLayer = new Kinetic.Layer();
+        var rect = new Kinetic.Rect({
+            x: 0, y:0,
+            width: this.props.width,
+            height: this.props.height,
+            fill: 'red'
+        });
+        var tile = new Kinetic.Image({
+            x: 0,
+            y: 0,
+            image: this.state.img,
+            width: 100,
+            height: 100
+        });
+        bgLayer.add(rect);
+        topLayer.add(tile);
+        topLayer.on('mouseover', this.click);
+        topStage.add(topLayer);
+        bottomStage.add(bgLayer);
+        var overlay = this.state.overlay;
+        var imageData = this.state.imageData;
+        if (imageData){
+            var ctx = this.getContext(topLayer);
             for (var idx=0; idx < imageData.data.length; idx+=4) {
                 if (idx % 4 != 3) {
                     if(overlay[idx+3] != 0){
@@ -64,11 +67,13 @@ var String = React.createClass({
                         imageData.data[idx+2] = overlay[idx+2];
                         imageData.data[idx+3] = overlay[idx+3];
                     }
+                    else{
+                        console.log(imageData.data[idx+3]);
+                    }
                 }
             }
-            stage.add(layer);
             ctx.putImageData(imageData, 0, 0);
-        };
+        }
     },
 
     getContext: function(layer) {
@@ -76,12 +81,33 @@ var String = React.createClass({
     },
 
     initStage: function() {
-        var stage = new Kinetic.Stage({
-            container: 'container',
+        var topStage = new Kinetic.Stage({
+            container: 'topCanvas',
             width: this.props.width,
             height: this.props.height
         });
-        this.setState({stage: stage});
+        var bottomStage = new Kinetic.Stage({
+            container: 'bottomCanvas',
+            width: this.props.width,
+            height: this.props.height
+        });
+        this.setState({
+            topStage: topStage,
+            bottomStage: bottomStage
+        });
+    },
+
+    initAssets: function () {
+        var img = new Image();
+        var _this = this;
+        var topLayer = new Kinetic.Layer();
+        img.src = 'tile.png';
+        img.onload = function() {
+
+            var ctx = _this.getContext(topLayer);
+            var imageData = ctx.getImageData(0, 0, 100, 100);
+            _this.setState({imageData: imageData});
+        };
     },
 
     initOverlay: function() {
@@ -107,6 +133,7 @@ var String = React.createClass({
 
     componentDidMount: function() {
         this.initStage();
+        this.initAssets();
         this.initOverlay();
     },
 
@@ -116,7 +143,10 @@ var String = React.createClass({
 
     render() {
         return (
-            <div id="container" />
+            <div>
+                <div id="topCanvas" />
+                <div id="bottomCanvas" />
+            </div>
         );
     }
 
