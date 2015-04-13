@@ -13,10 +13,9 @@ var String = React.createClass({
     getInitialState: function() {
         return {
             overlay: null,
-            bottomStage: null,
-            topStage: null,
-            imageData: null,
-            img: null
+            stage: null,
+            images: {},
+            loaded: false
         }
     },
 
@@ -33,44 +32,45 @@ var String = React.createClass({
     },
 
     renderCanvas: function() {
-        var bottomStage = this.state.bottomStage;
-        var topStage = this.state.topStage;
-        var topLayer = new Kinetic.Layer();
-        var bgLayer = new Kinetic.Layer();
-        var rect = new Kinetic.Rect({
-            x: 0, y:0,
-            width: this.props.width,
-            height: this.props.height,
-            fill: 'red'
-        });
-        var tile = new Kinetic.Image({
-            x: 0,
-            y: 0,
-            image: this.state.img,
-            width: 100,
-            height: 100
-        });
-        bgLayer.add(rect);
-        topLayer.add(tile);
-        topLayer.on('mouseover', this.click);
-        topStage.add(topLayer);
-        bottomStage.add(bgLayer);
-        var overlay = this.state.overlay;
-        var imageData = this.state.imageData;
-        if (imageData){
+        if (this.state.loaded){
+            var stage = this.state.stage;
+            var topLayer = new Kinetic.Layer();
+            var bgLayer = new Kinetic.Layer();
+
+            var rect = new Kinetic.Rect({
+                x: 0, y:0,
+                width: this.props.width,
+                height: this.props.height,
+                fill: 'red'
+            });
+            var tile = this.state.images.tile;
+            bgLayer.add(rect);
+            stage.add(bgLayer);
+
             var ctx = this.getContext(topLayer);
+            topLayer.add(tile);
+            topLayer.on('mouseover', this.click);
+            stage.add(topLayer);
+
+            var overlay = this.state.overlay;
+            var imageData = ctx.getImageData(0, 0, 100, 100);
+
             for (var idx=0; idx < imageData.data.length; idx+=4) {
-                if (idx % 4 != 3) {
+                if (idx%4 != 3){
                     if(overlay[idx+3] != 0){
                         imageData.data[idx] = overlay[idx];
                         imageData.data[idx+1] = overlay[idx+1];
                         imageData.data[idx+2] = overlay[idx+2];
                         imageData.data[idx+3] = overlay[idx+3];
                     }
-                    else{
-                        console.log(imageData.data[idx+3]);
+                    else {
+                        imageData.data[idx] = imageData.data[idx];
+                        imageData.data[idx+1] = imageData.data[idx+1];
+                        imageData.data[idx+2] = imageData.data[idx+2];
+                        imageData.data[idx+3] = imageData.data[idx+3];
                     }
                 }
+
             }
             ctx.putImageData(imageData, 0, 0);
         }
@@ -81,32 +81,32 @@ var String = React.createClass({
     },
 
     initStage: function() {
-        var topStage = new Kinetic.Stage({
-            container: 'topCanvas',
-            width: this.props.width,
-            height: this.props.height
-        });
-        var bottomStage = new Kinetic.Stage({
-            container: 'bottomCanvas',
+        var stage = new Kinetic.Stage({
+            container: 'canvasContainer',
             width: this.props.width,
             height: this.props.height
         });
         this.setState({
-            topStage: topStage,
-            bottomStage: bottomStage
+            stage: stage,
         });
     },
 
     initAssets: function () {
         var img = new Image();
         var _this = this;
-        var topLayer = new Kinetic.Layer();
         img.src = 'tile.png';
         img.onload = function() {
-
-            var ctx = _this.getContext(topLayer);
-            var imageData = ctx.getImageData(0, 0, 100, 100);
-            _this.setState({imageData: imageData});
+            var kImg = new Kinetic.Image({
+                x: 0,
+                y: 0,
+                image: img,
+                width: 100,
+                height: 100
+            });
+            var images = _this.state.images;
+            images.tile = kImg;
+            _this.setState({images: images});
+            _this.setState({loaded: true});
         };
     },
 
@@ -144,8 +144,7 @@ var String = React.createClass({
     render() {
         return (
             <div>
-                <div id="topCanvas" />
-                <div id="bottomCanvas" />
+                <div id="canvasContainer" />
             </div>
         );
     }
