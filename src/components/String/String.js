@@ -5,6 +5,11 @@ import Kinetic from 'kinetic';
 
 import './String.less';
 
+window.requestAnimationFrame = window.requestAnimationFrame ||
+window.mozRequestAnimationFrame ||
+window.webkitRequestAnimationFrame ||
+window.msRequestAnimationFrame;
+
 var String = React.createClass({
 
     propTypes: {
@@ -31,7 +36,7 @@ var String = React.createClass({
         this.revealOverlay(x, y);
     },
 
-    renderCanvas: function() {
+    tick: function(timestampMs) {
         if (this.state.loaded){
             var stage = this.state.stage;
             var topLayer = new Kinetic.Layer();
@@ -43,6 +48,7 @@ var String = React.createClass({
                 height: this.props.height,
                 fill: 'red'
             });
+
             var tile = this.state.images.tile;
             bgLayer.add(rect);
             stage.add(bgLayer);
@@ -56,24 +62,16 @@ var String = React.createClass({
             var imageData = ctx.getImageData(0, 0, 100, 100);
 
             for (var idx=0; idx < imageData.data.length; idx+=4) {
-                if (idx%4 != 3){
-                    if(overlay[idx+3] != 0){
-                        imageData.data[idx] = overlay[idx];
-                        imageData.data[idx+1] = overlay[idx+1];
-                        imageData.data[idx+2] = overlay[idx+2];
-                        imageData.data[idx+3] = overlay[idx+3];
-                    }
-                    else {
-                        imageData.data[idx] = imageData.data[idx];
-                        imageData.data[idx+1] = imageData.data[idx+1];
-                        imageData.data[idx+2] = imageData.data[idx+2];
-                        imageData.data[idx+3] = imageData.data[idx+3];
-                    }
+                if(overlay[idx+3] != 0){
+                    imageData.data[idx] = overlay[idx];
+                    imageData.data[idx+1] = overlay[idx+1];
+                    imageData.data[idx+2] = overlay[idx+2];
+                    imageData.data[idx+3] = overlay[idx+3];
                 }
-
             }
             ctx.putImageData(imageData, 0, 0);
         }
+        window.requestAnimationFrame(this.tick);
     },
 
     getContext: function(layer) {
@@ -87,7 +85,7 @@ var String = React.createClass({
             height: this.props.height
         });
         this.setState({
-            stage: stage,
+            stage: stage
         });
     },
 
@@ -105,6 +103,7 @@ var String = React.createClass({
             });
             var images = _this.state.images;
             images.tile = kImg;
+            kImg.cache();
             _this.setState({images: images});
             _this.setState({loaded: true});
         };
@@ -124,9 +123,11 @@ var String = React.createClass({
     },
 
     revealOverlay: function(x, y) {
+        // TODO: Maybe reveal the pixel in a nice way e.g.
+        // light shining through so around the edges show
+        // bleeding
         var overlay = this.state.overlay;
         var idx = 4 * (x + y * 100);
-        //overlay[idx+1] = 255; // TODO: Change this to alpha
         overlay[idx+3] = 0;
         this.setState({overlay: overlay})
     },
@@ -135,10 +136,7 @@ var String = React.createClass({
         this.initStage();
         this.initAssets();
         this.initOverlay();
-    },
-
-    componentDidUpdate: function() {
-        this.renderCanvas();
+        window.requestAnimationFrame(this.tick);
     },
 
     render() {
